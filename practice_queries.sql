@@ -137,3 +137,149 @@ create table Joints (Account_num bigint not null,Customer_id_1 varchar(45) not n
 Customer_id_3 varchar(45),Branch_id varchar(45) not null,
 constraint FK_Joints_1 foreign key (Account_num) references Accounts(Account_num),
 constraint FK_Joints_2 foreign key (Branch_id) references Branch(Branch_id));
+
+
+drop table Joints;
+
+-----------------------------------------------------------------------------------
+create table Student (rollno int primary key,first_Name varchar(45),last_name varchar(45),subject varchar(45));
+
+alter table Student 
+rename column subject to Subject;
+
+
+--------------------------------------------------------------------------------------
+#triggers
+
+#A trigger is a user defined sql command that is invoked automatically when an event such as insert ,delete and update occur
+
+-- create trigger 
+-- trigger_name trigger_time
+-- trigger_event 
+-- on table_name for each row 
+-- begin
+-- .
+-- .
+-- .end
+
+create database Triggers;
+use Triggers;
+show tables;
+
+#before insert trigger
+create table Customers
+(cust_id int,age int,name varchar(45));
+
+delimiter //
+create trigger age_verify
+before insert on Customers
+for each row 
+if new.age < 0 then set new.age = 0;
+end if;
+//
+
+insert into Customers
+values (101,21,'Daya'),
+(102,-40,'amith'),
+(103,32,'sai');
+
+
+select  * from Customers;
+
+#after triggers
+
+create table customers1
+(id int auto_increment primary key,
+name varchar(45) not null,
+email varchar(45),birthdate date);
+
+create table message
+(id int auto_increment,
+messageid int,
+message varchar(300) not null,
+primary key (id,messageId));
+
+delimiter //
+create trigger 
+check_null_dob
+after insert
+on customers1
+for each row 
+begin
+if new.birthdate is null then
+insert into message (messageId,message)
+values (new.id,concat('Hi ',new.name,',  please update your date of birth'));
+end if;
+end//
+
+insert into customers1 (name,email,birthdate)
+values ('daya','daya1232gmail.com',null),
+('amith','abc@cde.com','1992-11-16'),
+('sai','sai@abc.com','1999-09-23'),
+('raj','raj@yahoo.com',null);
+
+select * from message;
+
+#before update
+
+create table employees
+(emp_id int primary key,
+emp_name varchar(45),age int,salary float);
+
+insert into employees values 
+(101,'daya',21,1800),
+(102,'amith',20,1800),
+(103,'sai',21,2800),
+(104,'ram',21,800),
+(105,'ravi',21,50000);
+
+delimiter //
+create trigger upd_trigger
+before update
+on employees
+for each row
+begin
+if new.salary =10000 then
+set new.salary = 85000;
+elseif new.salary <10000 then
+set new.salary = 72000;
+end if;
+end//
+
+update employees
+set salary = 8000;
+where emp_id = 102;
+
+
+#before delete
+create table salary
+(eid int primary key,
+validform date not null,
+amount float not null);
+
+insert into salary (eid,validform,amount)
+values (101,'2001-09-09',55500),
+(103,'2002-09-01',56500),
+(104,'2004-01-09',50000),
+(102,'2001-09-29',75500);
+
+create table salarydel
+(id int primary key auto_increment,
+eid int,
+validform date not null,
+amount float not null,
+deldate timestamp default now());
+
+delimiter //
+create trigger salary_delete
+before delete
+on salary 
+for each row 
+begin 
+insert into salarydel(eid,validform,amount)
+value(old.eid,old.validform,old.amount);
+end
+//
+
+delete from salary
+where eid = 103;
